@@ -19,6 +19,12 @@
       "type": "assets",
       "source": ["dist/"]
     },
+    "bitcoin_backend": {
+      "dependencies": [],
+      "candid": "bitcoin_backend/bitcoin_backend.did",
+      "package": "bitcoin_backend",
+      "type": "rust"
+    },
     "backend_prod": {
       "dependencies": ["evm_rpc", "xrc"],
       "candid": "backend/backend.did",
@@ -70,8 +76,18 @@
     }
   },
   "defaults": {
+    "bitcoin": {
+      "enabled": true,
+      "nodes": ["127.0.0.1:18444"],
+      "log_level": "info"
+    },
     "build": {
       "packtool": "npm run --silent sources"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943"
     }
   },
   "output_env_file": ".env.sandbox",
