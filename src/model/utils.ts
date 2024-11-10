@@ -13,6 +13,7 @@ export const blockchainToBlockchainType = (
   if ('EVM' in blockchain) return 'EVM';
   if ('ICP' in blockchain) return 'ICP';
   if ('Solana' in blockchain) return 'Solana';
+  if ('Bitcoin' in blockchain) return 'Bitcoin';
   throw new Error('Unknown blockchain');
 };
 

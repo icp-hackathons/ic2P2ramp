@@ -41,7 +41,9 @@ export const formatTimeLeft = (seconds: number) => {
 
 export const formatCryptoUnits = (amount: number): string => {
   if (amount === 0) return '0.00';
-  if (amount < 0.0001) return amount.toExponential(2);
+  if (amount < 0.00001) return amount.toFixed(7);
+  if (amount < 0.0001) return amount.toFixed(6);
+  if (amount < 0.001) return amount.toFixed(5);
   if (amount < 1) return amount.toFixed(4);
   if (amount < 1000) return amount.toFixed(2);
   if (amount > 1000000000) return amount.toExponential(4);
