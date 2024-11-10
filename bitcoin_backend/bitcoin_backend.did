@@ -36,7 +36,7 @@ type VaultError = variant {
 };
 service : (BitcoinNetwork) -> {
   cancel_deposit : (text, nat64) -> (Result);
-  complete_order_and_send : (text, text, nat64) -> (Result_1);
+  complete_order_and_send : (text, nat64) -> (Result_1);
   deposit_to_address_vault : (text, nat64) -> (Result);
   get_balance : (text) -> (Result_2);
   get_offramper_deposits : (text) -> (Result_2) query;

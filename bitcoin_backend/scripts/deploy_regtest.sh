@@ -1,1 +1,0 @@
-dfx deploy bitcoin_backend --argument '(variant { regtest })'
