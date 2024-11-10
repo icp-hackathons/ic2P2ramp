@@ -26,6 +26,7 @@ import DynamicDots from '../ui/DynamicDots';
 import CurrencySelect from '../ui/CurrencySelect';
 import TokenSelect from '../ui/TokenSelect';
 import BlockchainSelect from '../ui/BlockchainSelect';
+import { fetchBitcoinCanisterAddress, transferBitcoinToCanister } from '../../model/bitcoin';
 
 const CreateOrder: React.FC = () => {
     const [cryptoAmount, setCryptoAmount] = useState(0);
@@ -54,6 +55,8 @@ const CreateOrder: React.FC = () => {
         principal,
         icpBalances,
         evmBalances,
+        bitcoinBalance,
+        bitcoinAddress,
         fetchBalances,
         refetchUser,
         logout
@@ -109,9 +112,17 @@ const CreateOrder: React.FC = () => {
             setSelectedBlockchain({ ICP: { ledger_principal: Principal.fromText(ICP_TOKENS[0].address) } });
         } else if (blockchainName === "Solana") {
             setSelectedBlockchain({ Solana: null });
+        } else if (blockchainName === 'Bitcoin') {
+            setSelectedBlockchain({ Bitcoin: null });
+            setSelectedToken({
+                name: "BTC",
+                address: "",
+                decimals: 8,
+                isNative: true,
+                rateSymbol: "BTC",
+                logo: ""
+            });
         }
-
-        setSelectedToken(null);
     };
 
     const handleTokenChange = (tokenAddress: string) => {
@@ -171,7 +182,9 @@ const CreateOrder: React.FC = () => {
                         : ethers.parseUnits(roundedCryptoAmount, selectedToken.decimals)
                 );
             } else if ('ICP' in selectedBlockchain) {
-                setCryptoAmountUnits(BigInt(Number(roundedCryptoAmount) * 10 ** selectedToken.decimals))
+                setCryptoAmountUnits(BigInt(Math.round(Number(roundedCryptoAmount) * 10 ** selectedToken.decimals)));
+            } else if ('Bitcoin' in selectedBlockchain) {
+                setCryptoAmountUnits(BigInt(Math.round(Number(roundedCryptoAmount) * 10 ** 8)));
             }
         }
     }, [cryptoAmount, selectedBlockchain, selectedToken])
@@ -312,6 +325,40 @@ const CreateOrder: React.FC = () => {
                     setIsLoading(false);
                     return;
                 }
+            } else if (blockchain === 'Bitcoin') {
+
+
+                try {
+                    if (!(window as any).unisat) {
+                        setMessage("Unisat wallet not detected. Please install it to proceed.");
+                        setIsLoading(false);
+                        return;
+                    }
+                    setLoadingMessage("Fetching bitcoin canister address");
+
+                    const bitcoinBackendAddress = await fetchBitcoinCanisterAddress();
+                    if (!bitcoinBackendAddress) {
+                        setMessage("Failed to retrieve Bitcoin canister address.");
+                        setIsLoading(false);
+                        return;
+                    }
+
+                    setLoadingMessage("Sending Bitcoin to canister");
+                    try {
+                        let txid = await transferBitcoinToCanister(cryptoAmountUnits, bitcoinBackendAddress);
+                        setTxHash(txid);
+                        setLoadingMessage("Transaction sent, awaiting confirmation");
+                    } catch (e: any) {
+                        setMessage(`Failed to send Bitcoin: ${e.message}`);
+                        console.error(e);
+                        setIsLoading(false);
+                        return;
+                    }
+                } catch (error) {
+                    setMessage(`Error creating Bitcoin order, error: ${error}`);
+                    setIsLoading(false);
+                    return;
+                }
             } else {
                 setIsLoading(false);
                 throw new Error('Unsupported blockchain selected');
@@ -376,6 +423,12 @@ const CreateOrder: React.FC = () => {
                 <div className="my-2 text-red-400">
                     Principal connected is not registered in your profile.
                 </div>
+        } else if (blockchainType === 'Bitcoin') {
+            return bitcoinAddress && user?.addresses.some(
+                addr => 'Bitcoin' in addr.address_type && addr.address !== bitcoinAddress) &&
+                <div className="my-2 text-red-400">
+                    Please connect a bitcoin address in your profile.
+                </div>
         }
     }
 
@@ -385,6 +438,8 @@ const CreateOrder: React.FC = () => {
         } else if (blockchainType === 'EVM' && selectedToken && evmBalances) {
             if (selectedToken.isNative) return evmBalances[selectedToken.name] || '0';
             return evmBalances[selectedToken.address];
+        } else if (blockchainType === 'Bitcoin') {
+            return bitcoinBalance;
         }
         return null
     };
@@ -507,16 +562,18 @@ const CreateOrder: React.FC = () => {
                     />
                 </div>
 
-                <div className="flex justify-between items-center mb-4">
-                    <label className="text-white w-24 flex-none">Token:</label>
-                    <TokenSelect
-                        tokenOptions={tokenOptions}
-                        selectedToken={selectedToken}
-                        onChange={handleTokenChange}
-                        className="flex-grow flex items-center w-full"
-                        buttonClassName="bg-gray-600 border-gray-500 rounded-md"
-                    />
-                </div>
+                {!blockchainType || !('Bitcoin' === blockchainType) &&
+                    <div className="flex justify-between items-center mb-4">
+                        <label className="text-white w-24 flex-none">Token:</label>
+                        <TokenSelect
+                            tokenOptions={tokenOptions}
+                            selectedToken={selectedToken}
+                            onChange={handleTokenChange}
+                            className="flex-grow flex items-center w-full"
+                            buttonClassName="bg-gray-600 border-gray-500 rounded-md"
+                        />
+                    </div>
+                }
 
                 {loadingRate && (
                     <div className="my-2 flex justify-center items-center space-x-2">

@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import icpLogo from "../../assets/blockchains/icp-logo.svg";
+import bitcoinLogo from '../../assets/blockchains/bitcoin-logo.svg';
 
 import { backend } from '../../model/backendProxy';
 import { OrderState, PaymentProvider, PaymentProviderType } from '../../declarations/backend/backend.did';
@@ -73,6 +74,18 @@ const Order: React.FC<OrderProps> = ({ order, refetchOrders }) => {
 
     const getToken = (): TokenOption | null => {
         if (!baseOrder || !orderBlockchain) return null;
+
+        if ('Bitcoin' in orderBlockchain) {
+            console.log("we are in bitcoin")
+            return {
+                name: "BTC",
+                address: "",
+                decimals: 8,
+                isNative: true,
+                rateSymbol: "BTC",
+                logo: bitcoinLogo
+            };
+        }
 
         const tokens = 'EVM' in orderBlockchain ? getEvmTokens(Number(orderBlockchain.EVM.chain_id))
             : 'ICP' in orderBlockchain ? ICP_TOKENS : null;
@@ -534,6 +547,8 @@ const Order: React.FC<OrderProps> = ({ order, refetchOrders }) => {
             return getNetwork()!.logo;
         } else if ('ICP' in orderBlockchain) {
             return icpLogo
+        } else if ('Bitcoin' in orderBlockchain) {
+            return bitcoinLogo
         }
     };
 
@@ -541,7 +556,11 @@ const Order: React.FC<OrderProps> = ({ order, refetchOrders }) => {
         if (!orderBlockchain) return "";
         if ('EVM' in orderBlockchain) {
             return getNetwork()!.name;
-        } else if ('ICP' in orderBlockchain) return 'ICP';
+        } else if ('ICP' in orderBlockchain) {
+            return 'ICP'
+        } else if ('Bitcoin' in orderBlockchain) {
+            return 'Bitcoin'
+        };
     };
 
     const formatCryptoAmount = () => {
@@ -561,10 +580,12 @@ const Order: React.FC<OrderProps> = ({ order, refetchOrders }) => {
                 }
                 const shortAmountEVM = formatCryptoUnits(parseFloat(fullAmountEVM));
                 return { fullAmount: fullAmountEVM, shortAmount: shortAmountEVM };
-            case 'ICP': backgroundColor
-                const fullAmountICP = (Number(crypto.amount - crypto.fee) / 10 ** token.decimals).toString();
-                const shortAmountICP = formatCryptoUnits(parseFloat(fullAmountICP));
-                return { fullAmount: fullAmountICP, shortAmount: shortAmountICP };
+            case 'ICP':
+            case 'Bitcoin':
+                console.log("hola bro")
+                const fullAmount = (Number(crypto.amount - crypto.fee) / 10 ** token.decimals).toString();
+                const shortAmount = formatCryptoUnits(parseFloat(fullAmount));
+                return { fullAmount, shortAmount };
             case 'Solana':
                 return { fullAmount: "Solana not implemented", shortAmount: "Solana not implemented" };
         }
