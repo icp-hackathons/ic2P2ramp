@@ -58,6 +58,10 @@ pub fn validate_icp_address(icp_address: &str) -> Result<()> {
     Ok(())
 }
 
+pub fn validate_bitcoin_address(_bitcoin_address: &str) -> Result<()> {
+    Ok(())
+}
+
 pub fn validate_email(address: &str) -> Result<()> {
     if EmailAddress::is_valid(address) {
         Ok(())

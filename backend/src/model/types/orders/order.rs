@@ -47,6 +47,7 @@ impl Order {
         match (blockchain.clone(), &offramper_address.address_type) {
             (Blockchain::EVM { .. }, AddressType::EVM)
             | (Blockchain::ICP { .. }, AddressType::ICP)
+            | (Blockchain::Bitcoin, AddressType::Bitcoin)
             | (Blockchain::Solana, AddressType::Solana) => (),
             _ => {
                 return Err(SystemError::InvalidInput(
@@ -112,6 +113,7 @@ impl Order {
         ) {
             (Blockchain::EVM { .. }, AddressType::EVM)
             | (Blockchain::ICP { .. }, AddressType::ICP)
+            | (Blockchain::Bitcoin, AddressType::Bitcoin)
             | (Blockchain::Solana, AddressType::Solana) => (),
             _ => {
                 return Err(SystemError::InvalidInput(

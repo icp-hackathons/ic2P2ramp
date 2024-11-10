@@ -11,6 +11,7 @@ use super::{
 pub enum Blockchain {
     EVM { chain_id: u64 },
     ICP { ledger_principal: Principal },
+    Bitcoin,
     Solana,
 }
 
@@ -43,6 +44,7 @@ impl Crypto {
             Blockchain::ICP { ledger_principal } => {
                 Ok(icp::get_icp_token(ledger_principal)?.symbol)
             }
+            Blockchain::Bitcoin => Ok("BTC".to_string()),
             _ => Err(BlockchainError::UnsupportedBlockchain.into()),
         }
     }
@@ -59,6 +61,7 @@ impl Crypto {
             Blockchain::ICP { ledger_principal } => {
                 Ok(icp::get_icp_token(ledger_principal)?.decimals)
             }
+            Blockchain::Bitcoin => Ok(8),
             _ => Err(BlockchainError::UnsupportedBlockchain.into()),
         }
     }

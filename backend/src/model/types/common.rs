@@ -79,6 +79,7 @@ impl LoginAddress {
 pub enum AddressType {
     EVM,
     ICP,
+    Bitcoin,
     Solana,
 }
 
@@ -109,6 +110,7 @@ impl TransactionAddress {
         match self.address_type {
             AddressType::EVM => helpers::validate_evm_address(&self.address),
             AddressType::ICP => helpers::validate_icp_address(&self.address),
+            AddressType::Bitcoin => helpers::validate_bitcoin_address(&self.address),
             AddressType::Solana => helpers::validate_solana_address(&self.address),
         }?;
 
