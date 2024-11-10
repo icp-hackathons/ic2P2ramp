@@ -18,15 +18,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRemove, faSpinner, faSync, faCopy, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import icpLogo from "../../assets/blockchains/icp-logo.svg";
 import ethereumLogo from "../../assets/blockchains/ethereum-logo.png";
+import bitcoinLogo from "../../assets/blockchains/bitcoin-logo.svg";
 
 const UserProfile: React.FC = () => {
     const [providerType, setProviderType] = useState<PaymentProviderTypes>();
     const [providerId, setProviderId] = useState('');
-    const [selectedAddressType, setSelectedAddressType] = useState<'ICP' | 'EVM'>('EVM');
+    const [selectedAddressType, setSelectedAddressType] = useState<'ICP' | 'EVM' | 'Bitcoin'>('Bitcoin');
     const [addressDropdownOpen, setAddressDropdownOpen] = useState(false);
     const [revolutScheme, setRevolutScheme] = useState<revolutSchemeTypes>('UK.OBIE.SortCodeAccountNumber');
     const [revolutName, setRevolutName] = useState('');
     const [message, setMessage] = useState('');
+    const [loadingUnisat, setLoadingUnisat] = useState(false);
     const [loadingAddAddress, setLoadingAddAddress] = useState(false);
     const [loadingAddProvider, setLoadingAddProvider] = useState(false);
     const [isClicked, setIsClicked] = useState(false);
@@ -39,6 +41,8 @@ const UserProfile: React.FC = () => {
         currency,
         sessionToken,
         principal,
+        bitcoinAddress,
+        connectUnisat,
         loginInternetIdentity,
         refetchUser,
         setCurrency,
@@ -91,13 +95,19 @@ const UserProfile: React.FC = () => {
         setTimeout(() => setIsClicked(false), 1000);
     };
 
-    const handleAddressSelectOption = (addressType: 'ICP' | 'EVM') => {
+    const handleAddressSelectOption = (addressType: 'ICP' | 'EVM' | 'Bitcoin') => {
         setSelectedAddressType(addressType);
         setAddressDropdownOpen(false);
     };
 
     const handleInternetIdentityLogin = async () => {
         await loginInternetIdentity();
+    };
+
+    const handleConnectUnisat = async () => {
+        setLoadingUnisat(true);
+        await connectUnisat();
+        setLoadingUnisat(false);
     };
 
     const handleAddProvider = async () => {
@@ -303,6 +313,8 @@ const UserProfile: React.FC = () => {
                                 <img src={ethereumLogo} alt="Ethereum Logo" className="h-6 w-6 inline" />
                             ) : selectedAddressType === 'ICP' ? (
                                 <img src={icpLogo} alt="ICP Logo" className="h-6 w-6 inline" />
+                            ) : selectedAddressType === 'Bitcoin' ? (
+                                <img src={bitcoinLogo} alt="Bitcoin Logo" className="h-6 w-6 inline" />
                             ) : <span>Select Address Type'</span>}
                             <svg
                                 className={`w-3 h-3 transition-transform ${addressDropdownOpen ? 'rotate-180' : ''}`}
@@ -327,6 +339,12 @@ const UserProfile: React.FC = () => {
                                     onClick={() => handleAddressSelectOption('ICP')}
                                 >
                                     <img src={icpLogo} alt="ICP Logo" className="h-6 w-6" />
+                                </div>
+                                <div
+                                    className="flex items-center px-3 py-2 hover:bg-gray-500 cursor-pointer"
+                                    onClick={() => handleAddressSelectOption('Bitcoin')}
+                                >
+                                    <img src={bitcoinLogo} alt="Bitcoin Logo" className="h-6 w-6" />
                                 </div>
                             </div>
                         )}
@@ -376,7 +394,7 @@ const UserProfile: React.FC = () => {
                                     className="px-3 py-2 border border-gray-500 w-full rounded-md bg-gray-600"
                                 />
                                 <button
-                                    disabled={isAddressInUserAddresses(principal.toString()) || (isAddressInUserAddresses(principal.toString()) || loadingAddAddress)}
+                                    disabled={isAddressInUserAddresses(principal.toString()) || loadingAddAddress}
                                     onClick={() => handleAddAddress(principal.toString())}
                                     className={`ml-2 px-4 py-2  w-1/4 font-semibold rounded-md flex justify-center items-center 
                                         ${!principal || isAddressInUserAddresses(principal.toString())
@@ -394,6 +412,39 @@ const UserProfile: React.FC = () => {
                                     className="px-4 py-2 bg-amber-800 text-lg font-bold rounded-md cursor-pointer w-full"
                                 >
                                     Connect ICP
+                                </button>
+                            </div>
+                        )
+                    ) : selectedAddressType === 'Bitcoin' ? (
+                        bitcoinAddress ? (
+                            <div className="flex-grow flex items-center">
+                                <input
+                                    type="text"
+                                    value={bitcoinAddress}
+                                    readOnly
+                                    className="px-3 py-2 border border-gray-500 w-full rounded-md bg-gray-600"
+                                />
+                                <button
+                                    disabled={isAddressInUserAddresses(bitcoinAddress) || loadingAddAddress}
+                                    onClick={() => handleAddAddress(bitcoinAddress)}
+                                    className={`ml-2 px-4 py-2  w-1/4 font-semibold rounded-md flex justify-center items-center 
+                                        ${!bitcoinAddress || isAddressInUserAddresses(bitcoinAddress)
+                                            ? 'bg-gray-500 cursor-not-allowed'
+                                            : 'bg-indigo-700 hover:bg-indigo-800'} 
+                                        ${loadingAddAddress ? 'cursor-not-allowed' : ''}`
+                                    }>
+                                    {addButtonContent(loadingAddAddress)}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex-grow">
+                                <button
+                                    onClick={handleConnectUnisat}
+                                    disabled={loadingUnisat}
+                                    className={`px-4 py-2 font-bold rounded-md w-full cursor-pointer text-lg 
+                                ${loadingUnisat ? 'bg-gray-500 cursor-not-allowed' : 'bg-indigo-700 hover:bg-indigo-800'}`}
+                                >
+                                    {loadingUnisat ? "Connecting..." : "Connect Unisat"}
                                 </button>
                             </div>
                         )

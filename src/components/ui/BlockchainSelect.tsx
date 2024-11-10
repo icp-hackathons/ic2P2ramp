@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 import icpLogo from '../../assets/blockchains/icp-logo.svg';
 import ethereumLogo from '../../assets/blockchains/ethereum-logo.png';
+import bitcoinLogo from '../../assets/blockchains/bitcoin-logo.svg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
@@ -18,7 +19,8 @@ const BlockchainSelect: React.FC<BlockchainSelectProps> = ({ selectedBlockchain,
 
     const blockchainOptions = [
         { name: 'EVM', logo: ethereumLogo },
-        { name: 'ICP', logo: icpLogo }
+        { name: 'ICP', logo: icpLogo },
+        { name: 'Bitcoin', logo: bitcoinLogo }
     ];
 
     const handleOptionSelect = (blockchain: string) => {

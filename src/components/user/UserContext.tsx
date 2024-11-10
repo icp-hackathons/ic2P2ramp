@@ -44,6 +44,8 @@ interface UserContextProps {
     currency: string;
     sessionToken: string | null;
     password: string | null;
+    bitcoinAddress: string | null;
+    connectUnisat: () => Promise<void>;
     loginInternetIdentity: () => Promise<[Principal, HttpAgent]>;
     authenticateUser: (
         login: LoginAddress | null,
@@ -58,6 +60,7 @@ interface UserContextProps {
     principal: Principal | null;
     icpBalances: { [tokenName: string]: Balance } | null;
     evmBalances: { [tokenAddress: string]: Balance } | null;
+    bitcoinBalance: Balance | null;
     fetchBalances: () => Promise<void>;
 }
 
@@ -73,9 +76,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [principal, setPrincipal] = useState<Principal | null>(null);
     const [currency, setCurrency] = useState<string>(getPreferredCurrency() ?? 'USD');
 
+    const [bitcoinAddress, setBitcoinAddress] = useState<string | null>(null);
+    const [unisatInstalled, setUnisatInstalled] = useState(false);
+
     const { address, chainId, isConnected } = useAccount();
     const [icpBalances, setIcpBalances] = useState<{ [tokenName: string]: Balance } | null>(null);
     const [evmBalances, setEvmBalances] = useState<{ [tokenAddress: string]: Balance } | null>(null);
+    const [bitcoinBalance, setBitcoinBalance] = useState<Balance | null>(null);
 
     const userType = getUserType(user);
 
@@ -107,6 +114,35 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             fetchEvmBalances();
         }
     }, [chainId, address, isConnected])
+
+    useEffect(() => {
+        if (unisatInstalled) {
+            fetchBitcoinBalance();
+        }
+    }, [unisatInstalled])
+
+    useEffect(() => {
+        if (typeof window !== "undefined" && (window as any).unisat) {
+            setUnisatInstalled(true);
+        }
+    }, []);
+
+    const connectUnisat = async () => {
+        if (unisatInstalled) {
+            try {
+                if ((window as any).unisat) {
+                    const accounts = await (window as any).unisat.requestAccounts();
+                    if (accounts && accounts.length > 0) {
+                        setBitcoinAddress(accounts[0]);
+                    }
+                } else {
+                    alert("Unisat wallet is not installed. Please install it to connect.");
+                }
+            } catch (error) {
+                console.error("Failed to connect to Unisat", error);
+            }
+        }
+    };
 
     const checkInternetIdentity = async () => {
         try {
@@ -284,6 +320,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const fetchBitcoinBalance = async () => {
+        if (!unisatInstalled) return;
+
+        try {
+            let res = await (window as any).unisat.getBalance();
+            setBitcoinBalance({ raw: res.total, formatted: formatCryptoUnits(res.total / 10 ** 8) });
+        } catch (e) {
+            console.log('Failed to fetch Bitcoin balance: ', e);
+            setBitcoinBalance(null);
+        }
+
+    }
+
     const fetchEvmBalances = async () => {
         if (!window.ethereum || !chainId || !address || !isConnected) return;
 
@@ -330,6 +379,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             principal,
             icpBalances,
             evmBalances,
+            bitcoinBalance,
+            bitcoinAddress,
+            connectUnisat,
             setUser,
             setLoginMethod: (login: LoginAddress | null, pwd?: string) => {
                 setLoginMethod(login);
