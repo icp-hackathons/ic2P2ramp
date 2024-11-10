@@ -1,7 +1,9 @@
 dfx generate backend
 
 dfx deploy backend --argument "(
-  opt record {
+  variant {
+  
+  Reinstall = record {
     ecdsa_key_id = record {
       name = \"dfx_test_key\";
       curve = variant { secp256k1 };
@@ -21,5 +23,7 @@ dfx deploy backend --argument "(
       tan = \"test-jwk.s3.eu-west-3.amazonaws.com\";
     };
     proxy_url = \"https://ic2p2ramp.xyz\";
+  }
+
   }
 )"
