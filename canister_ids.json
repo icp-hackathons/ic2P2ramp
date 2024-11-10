@@ -2,11 +2,20 @@
   "backend": {
     "ic": "5rqet-6aaaa-aaaap-qklma-cai"
   },
+  "backend_devcon": {
+    "ic": "nkkwx-4aaaa-aaaap-qpjnq-cai"
+  },
   "backend_prod": {
     "ic": "ygiqq-kqaaa-aaaap-qkh6a-cai"
   },
+  "bitcoin_devcon": {
+    "ic": "ndj5l-kiaaa-aaaap-qpjma-cai"
+  },
   "frontend": {
     "ic": "5wrch-tyaaa-aaaap-qklmq-cai"
+  },
+  "frontend_devcon": {
+    "ic": "n7nh2-5iaaa-aaaap-qpjoa-cai"
   },
   "frontend_prod": {
     "ic": "paaji-gyaaa-aaaap-qkedq-cai"
