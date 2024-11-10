@@ -20,18 +20,15 @@ use crate::{
         vault::Ic2P2ramp,
     },
     management::vault,
-    model::{
-        memory::{
-            heap::{logs, read_state},
-            stable::orders::unset_processing_order,
-        },
-        types::evm::{chains, nonce::NonceFeeEstimates},
+    model::memory::{
+        heap::{logs, read_state},
+        stable::orders::unset_processing_order,
     },
     types::{
         evm::{
-            chains::get_rpc_providers,
+            chains::{self, get_rpc_providers},
             logs::TransactionStatus,
-            nonce::{self, release_and_increment_nonce, release_nonce},
+            nonce::{self, release_and_increment_nonce, release_nonce, NonceFeeEstimates},
             request::SignRequest,
             transaction::TransactionAction,
         },

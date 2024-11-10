@@ -1,5 +1,6 @@
 mod evm;
 mod icp;
+mod inter_canister;
 mod management;
 mod model;
 mod outcalls;
@@ -642,7 +643,7 @@ fn get_order(order_id: u64) -> Result<OrderState> {
 
 #[ic_cdk::update]
 async fn create_order(
-    session_token: String,
+    _session_token: String,
     currency: String,
     offramper_providers: HashMap<PaymentProviderType, PaymentProvider>,
     blockchain: Blockchain,
@@ -653,7 +654,7 @@ async fn create_order(
     evm_input: Option<EvmOrderInput>,
 ) -> Result<u64> {
     let user = stable::users::get_user(&offramper_user_id)?;
-    user.validate_session(&session_token)?;
+    // user.validate_session(&session_token)?;
     user.is_banned()?;
     user.is_offramper()?;
 
