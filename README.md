@@ -20,7 +20,9 @@
 
 **icRamp** is a decentralized protocol combining the Internet Computer (ICP) with Ethereum and other EVM blockchains to facilitate onramping and offramping of digital assets. This protocol simplifies onramping and offramping digital assets with a secure, user-friendly platform, eliminating the need for centralized exchanges and reducing trust issues.
 
-Created for [ETH Prague 2024](https://devfolio.co/projects/icpramp-ca30), this project leverages multiple ICP canisters for enhanced functionality, including HTTPS outcalls, EVM RPC communication, and real-time exchange rate retrieval. For the associated EVM smart contracts used in the frontend and backend canisters, visit the [icRamp-contracts](https://github.com/reymom/ic2P2ramp-contracts) repository.
+Created for [ETH Prague 2024](https://devfolio.co/projects/icpramp-ca30), this project leverages multiple ICP canisters for enhanced functionality, including HTTPS outcalls, EVM RPC communication, and real-time exchange rate retrieval. For the associated EVM smart contracts used in the frontend and backend canisters, visit the [icRamp-contracts](https://github.com/reymom/icRamp-contracts) repository. The platform now also enables seamless Bitcoin transactions through its integrated Bitcoin canister, added for [Devcon’s ICP Hackerhouse](https://github.com/ICP-Hacker-House/Devcon_BKK).
+
+With this Bitcoin integration, users can now create Bitcoin-based orders alongside Ethereum and other EVM-based assets. The Bitcoin canister uses ICP’s threshold ECDSA signatures for secure transactions, allowing users to securely lock and unlock BTC funds without requiring an external wallet. To learn more about the EVM smart contracts that power these functionalities, visit the icRamp-contracts repository.
 
 ## Use Cases
 
