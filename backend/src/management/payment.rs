@@ -7,6 +7,7 @@ use crate::{
     errors::{BlockchainError, OrderError, Result, UserError},
     evm::vault::Ic2P2ramp,
     icp::vault::Ic2P2ramp as ICPRamp,
+    inter_canister::bitcoin,
     management,
     outcalls::{paypal, revolut},
     types::{
@@ -128,6 +129,13 @@ pub async fn handle_payment_completion(order: &LockedOrder) -> Result<()> {
         Blockchain::EVM { chain_id } => Ic2P2ramp::release_funds(order.clone(), chain_id).await,
         Blockchain::ICP { ledger_principal } => {
             handle_icp_payment_completion(order, &ledger_principal).await
+        }
+        Blockchain::Bitcoin => {
+            bitcoin::bitcoin_backend_send_funds(
+                order.onramper.address.address.clone(),
+                order.base.crypto.amount as u64,
+            )
+            .await
         }
         _ => Err(BlockchainError::UnsupportedBlockchain)?,
     }

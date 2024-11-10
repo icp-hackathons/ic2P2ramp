@@ -13,6 +13,7 @@ use crate::evm::{
     vault::Ic2P2ramp,
 };
 use crate::icp::vault::Ic2P2ramp as ICPRamp;
+use crate::inter_canister::bitcoin;
 use crate::management::user as user_management;
 use crate::model::guards;
 use crate::model::{
@@ -136,6 +137,7 @@ async fn order_crypto_fee(
 
             Ok(get_crypto_fee(crypto_amount, icp_fee * 2))
         }
+        Blockchain::Bitcoin => Ok(get_crypto_fee(crypto_amount, 100 * 2)),
         _ => Err(BlockchainError::UnsupportedBlockchain)?,
     }
 }
@@ -214,6 +216,7 @@ pub async fn validate_deposit_tx(
             is_icp_token_supported(ledger_principal)?;
             Ok(None)
         }
+        Blockchain::Bitcoin => Ok(None),
         _ => Err(BlockchainError::UnsupportedBlockchain)?,
     }
 }
@@ -426,6 +429,25 @@ pub async fn lock_order(
             )?;
             Ok(())
         }
+        Blockchain::Bitcoin => {
+            memory::stable::orders::lock_order(
+                order_id,
+                price,
+                offramper_fee,
+                onramper_user_id,
+                onramper_provider,
+                onramper_address.clone(),
+                revolut_consent,
+            )?;
+
+            bitcoin::bitcoin_backend_lock_funds(
+                order.offramper_address.address,
+                onramper_address.address,
+                order.crypto.amount as u64,
+            )
+            .await?;
+            Ok(())
+        }
         _ => Err(BlockchainError::UnsupportedBlockchain)?,
     }
 }
@@ -496,6 +518,18 @@ pub async fn unlock_order(order_id: u64) -> Result<()> {
             memory::stable::orders::unlock_order(order.base.id)?;
             Ok(())
         }
+        Blockchain::Bitcoin => {
+            memory::stable::orders::unlock_order(order.base.id)?;
+
+            bitcoin::bitcoin_backend_unlock_funds(
+                order.base.offramper_address.address,
+                order.onramper.address.address,
+                order.base.crypto.amount as u64,
+            )
+            .await?;
+
+            Ok(())
+        }
         _ => Err(BlockchainError::UnsupportedBlockchain)?,
     }
 }
@@ -544,6 +578,17 @@ pub async fn cancel_order(order_id: u64, session_token: String) -> Result<()> {
             .await?;
 
             memory::stable::orders::cancel_order(order_id)?;
+            Ok(())
+        }
+        Blockchain::Bitcoin => {
+            memory::stable::orders::cancel_order(order_id)?;
+
+            bitcoin::bitcoin_backend_cancel_deposit(
+                order.offramper_address.address,
+                order.crypto.amount as u64,
+            )
+            .await?;
+
             Ok(())
         }
         _ => Err(BlockchainError::UnsupportedBlockchain)?,
