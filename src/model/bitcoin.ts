@@ -18,7 +18,7 @@ export const transferBitcoinToCanister = async (
   const txid = await (window as any).unisat.sendBitcoin(
     bitcoinBackendAddress,
     satoshiAmount,
-    { feeRate: 49 },
+    { feeRate: 55 },
   );
 
   console.log('Transaction ID:', txid);

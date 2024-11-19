@@ -290,6 +290,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const fetchBalances = async () => {
         await fetchIcpBalances();
         await fetchEvmBalances();
+        await fetchBitcoinBalance();
     };
 
     const fetchIcpBalances = async () => {
@@ -325,6 +326,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             let res = await (window as any).unisat.getBalance();
+            console.log("[fetchBitcoinBalance] unisatGetBalance res = ", res);
             setBitcoinBalance({ raw: res.total, formatted: formatCryptoUnits(res.total / 10 ** 8) });
         } catch (e) {
             console.log('Failed to fetch Bitcoin balance: ', e);

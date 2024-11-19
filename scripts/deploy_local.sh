@@ -58,7 +58,7 @@ dfx deploy ckbtc_ledger_canister_testnet --argument "
       transfer_fee = opt record {
         e8s = 10 : nat64;
       };
-      token_symbol = opt \"ckBTC\";
+      token_symbol = opt \"BTC\";
       token_name = opt \"Chain key testnet Bitcoin\";
     }
   })
@@ -180,7 +180,7 @@ dfx canister call backend register_evm_tokens '(421614 : nat64, vec {
 
 # export ACCOUNT_ID=$(dfx ledger account-id --of-principal x43o3-z4337-mle53-vdvne-poc44-i7e66-rr34k-3sdep-uebye-i4r3t-7qe)
 
-# export TO_PRINCIPAL="wyleq-q3sww-a5sx6-tjeq3-r6wgj-adhrn-jxjx3-yehem-5uqoy-5ckwq-4qe"
+# export TO_PRINCIPAL="hhiav-hyozb-vrf5y-wligd-qai2n-xgwbb-haol3-4xqp3-rh73l-hhtep-qae"
 # export TO_SUBACCOUNT="null"
 # export AMOUNT="2_500_000_000"
 # export FEE="10_000"

@@ -342,6 +342,7 @@ const CreateOrder: React.FC = () => {
                         setIsLoading(false);
                         return;
                     }
+                    console.log("bitcoinBackendAddress = ", bitcoinBackendAddress);
 
                     setLoadingMessage("Sending Bitcoin to canister");
                     try {
