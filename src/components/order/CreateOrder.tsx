@@ -7,9 +7,10 @@ import { Principal } from '@dfinity/principal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
-import { backend } from '../../declarations/backend';
+import { backend } from '../../model/backendProxy';
 import { PaymentProvider, PaymentProviderType, Blockchain, EvmOrderInput } from '../../declarations/backend/backend.did';
 import { defaultReleaseEvmGas, getEvmTokens, defaultCommitEvmGas } from '../../constants/evm_tokens';
+import { supportedRuneSymbols } from '../../constants/runes';
 import { CURRENCY_ICON_MAP } from '../../constants/currencyIconsMap';
 import { ICP_TOKENS } from '../../constants/icp_tokens';
 import { NetworkIds, NetworkProps } from '../../constants/networks';
@@ -26,7 +27,8 @@ import DynamicDots from '../ui/DynamicDots';
 import CurrencySelect from '../ui/CurrencySelect';
 import TokenSelect from '../ui/TokenSelect';
 import BlockchainSelect from '../ui/BlockchainSelect';
-import { fetchBitcoinCanisterAddress, transferBitcoinToCanister } from '../../model/bitcoin';
+import { fetchBitcoinCanisterAddress, fetchRuneMetadata, transferBitcoinToCanister, transferRuneToCanister } from '../../model/bitcoin';
+import bitcoinLogo from '../../assets/blockchains/bitcoin-logo.svg';
 
 const CreateOrder: React.FC = () => {
     const [cryptoAmount, setCryptoAmount] = useState(0);
@@ -99,6 +101,47 @@ const CreateOrder: React.FC = () => {
         }
     }, [blockchainType, chainId]);
 
+    useEffect(() => {
+        const fetchBitcoinTokens = async () => {
+            if (blockchainType === 'Bitcoin') {
+                const tokens: TokenOption[] = [];
+
+                // Add BTC as the native token
+                tokens.push({
+                    name: "BTC",
+                    address: "",
+                    decimals: 8,
+                    isNative: true,
+                    rateSymbol: "BTC",
+                    logo: bitcoinLogo,
+                });
+
+                for (const rune of supportedRuneSymbols) {
+                    try {
+                        const { metadata, serialized } = await fetchRuneMetadata(rune.symbol);
+                        tokens.push({
+                            name: rune.name,
+                            address: serialized,
+                            decimals: metadata.divisibility,
+                            isNative: false,
+                            rateSymbol: metadata.symbol,
+                            logo: rune.logo,
+                            runeMetadata: metadata,
+                        });
+                    } catch (error) {
+                        console.error(`Failed to fetch metadata for ${rune.symbol}:`, error);
+                    }
+                }
+
+                setTokenOptions(tokens);
+            }
+        };
+
+        if (blockchainType === 'Bitcoin') {
+            fetchBitcoinTokens();
+        }
+    }, [blockchainType]);
+
     const handleBlockchainChange = (blockchainName: string) => {
         if (loadingRate) return;
 
@@ -114,14 +157,6 @@ const CreateOrder: React.FC = () => {
             setSelectedBlockchain({ Solana: null });
         } else if (blockchainName === 'Bitcoin') {
             setSelectedBlockchain({ Bitcoin: null });
-            setSelectedToken({
-                name: "BTC",
-                address: "",
-                decimals: 8,
-                isNative: true,
-                rateSymbol: "BTC",
-                logo: ""
-            });
         }
     };
 
@@ -326,8 +361,6 @@ const CreateOrder: React.FC = () => {
                     return;
                 }
             } else if (blockchain === 'Bitcoin') {
-
-
                 try {
                     if (!(window as any).unisat) {
                         setMessage("Unisat wallet not detected. Please install it to proceed.");
@@ -336,7 +369,7 @@ const CreateOrder: React.FC = () => {
                     }
                     setLoadingMessage("Fetching bitcoin canister address");
 
-                    const bitcoinBackendAddress = await fetchBitcoinCanisterAddress();
+                    const bitcoinBackendAddress = await fetchBitcoinCanisterAddress(false);
                     if (!bitcoinBackendAddress) {
                         setMessage("Failed to retrieve Bitcoin canister address.");
                         setIsLoading(false);
@@ -344,17 +377,37 @@ const CreateOrder: React.FC = () => {
                     }
                     console.log("bitcoinBackendAddress = ", bitcoinBackendAddress);
 
-                    setLoadingMessage("Sending Bitcoin to canister");
-                    try {
-                        let txid = await transferBitcoinToCanister(cryptoAmountUnits, bitcoinBackendAddress);
-                        setTxHash(txid);
-                        setLoadingMessage("Transaction sent, awaiting confirmation");
-                    } catch (e: any) {
-                        setMessage(`Failed to send Bitcoin: ${e.message}`);
-                        console.error(e);
-                        setIsLoading(false);
-                        return;
+                    if (selectedToken.runeMetadata) {
+                        setLoadingMessage("Sending Rune to canister");
+                        try {
+                            const txid = await transferRuneToCanister(
+                                cryptoAmountUnits,
+                                bitcoinBackendAddress,
+                                selectedToken.address
+                            );
+                            setTxHash(txid);
+                        } catch (e: any) {
+                            setMessage(`Failed to send Rune: ${e}`);
+                            console.error(e);
+                            setIsLoading(false);
+                            return;
+                        }
+                    } else {
+                        setLoadingMessage("Sending Bitcoin to canister");
+                        try {
+                            const txid = await transferBitcoinToCanister(
+                                cryptoAmountUnits,
+                                bitcoinBackendAddress
+                            );
+                            setTxHash(txid);
+                        } catch (e: any) {
+                            setMessage(`Failed to send Bitcoin: ${e}`);
+                            console.error(e);
+                            setIsLoading(false);
+                            return;
+                        }
                     }
+                    setLoadingMessage("Transaction sent, awaiting confirmation");
                 } catch (error) {
                     setMessage(`Error creating Bitcoin order, error: ${error}`);
                     setIsLoading(false);
@@ -563,7 +616,7 @@ const CreateOrder: React.FC = () => {
                     />
                 </div>
 
-                {!blockchainType || !('Bitcoin' === blockchainType) &&
+                {blockchainType &&
                     <div className="flex justify-between items-center mb-4">
                         <label className="text-white w-24 flex-none">Token:</label>
                         <TokenSelect
