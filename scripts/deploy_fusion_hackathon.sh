@@ -2,8 +2,8 @@
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
 
-shellcheck source=../.env.sandbox
-source "$DIR/../.env.sandbox" || {
+shellcheck source=../.env
+source "$DIR/../.env" || {
   echo "error while sourcing env file"
   exit
 }
@@ -17,16 +17,16 @@ cargo build --release --target wasm32-unknown-unknown --package bitcoin_backend
 
 candid-extractor target/wasm32-unknown-unknown/release/bitcoin_backend.wasm > bitcoin_backend/bitcoin_backend.did
 
-dfx canister create --with-cycles 1_000_000_000_000 bitcoin_decvon --ic
+dfx canister create --with-cycles 1_000_000_000_000 bitcoin_fusion --ic
 
-dfx deploy bitcoin_devcon --argument '(variant { testnet })'
+dfx deploy bitcoin_fusion --argument '(variant { testnet })' --ic
 
 # Backend Deployment
 cargo build --release --target wasm32-unknown-unknown --package backend
 
-dfx canister create --with-cycles 1_000_000_000_000 backend_devcon --ic
+dfx canister create --with-cycles 1_000_000_000_000 backend_fusion --ic
 
-dfx deploy backend_devcon --argument "(
+dfx deploy backend_fusion --argument "(
   variant { 
     Reinstall = record {
       ecdsa_key_id = record {
@@ -110,3 +110,10 @@ dfx deploy backend_devcon --argument "(
     }
   }
 )" --ic
+
+dfx canister call bitcoin_fusion register_runes '(vec {
+    record { symbol = "🐕"; fivisibility = 5 : nat8; cap = 100_000_000_000 : nat; premine = 100_000_000_000 : nat };
+    record { symbol = "🤖"; divisibility = 5 : nat8; cap = 1_000_000_000 : nat; premine = 1_000_000_000 : nat };
+    record { symbol = "🐸"; divisibility = 5 : nat8; cap = 20_814_270_000 : nat; premine = 20_790_000_000 : nat };
+    record { symbol = "🧙"; divisibility = 0 : nat8; cap = 10_000 : nat; premine = 10_000 : nat };
+})'
