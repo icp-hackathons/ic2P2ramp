@@ -69,6 +69,11 @@ const TokenSelect: React.FC<TokenSelectProps> = ({ tokenOptions, selectedToken, 
                         >
                             <img src={token.logo} alt={token.name} className="h-6 w-6 inline-block mr-2" />
                             <span>{token.name}</span>
+                            {token.runeMetadata && (
+                                <small className="block text-gray-400 text-xs">
+                                    Div: {token.runeMetadata.divisibility}
+                                </small>
+                            )}
                         </div>
                     ))}
                 </div>
