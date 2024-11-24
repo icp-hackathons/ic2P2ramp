@@ -1,6 +1,6 @@
 use crate::{
     memory::stable::vault::ONRAMPER_VAULTS,
-    types::{errors::Result, Address},
+    model::types::{errors::Result, Address, Runes},
 };
 
 pub fn lock_funds(offramper: Address, onramper: Address, amount: u64) -> Result<()> {
@@ -14,10 +14,15 @@ pub fn lock_funds(offramper: Address, onramper: Address, amount: u64) -> Result<
     Ok(())
 }
 
-pub fn unlock_funds(offramper: Address, onramper: Address, amount: u64) -> Result<()> {
-    super::complete::complete_order(onramper, amount)?;
+pub fn unlock_funds(
+    offramper: Address,
+    onramper: Address,
+    amount: u64,
+    runes: Option<Runes>,
+) -> Result<()> {
+    super::complete::complete_order(onramper, amount, runes.clone())?;
 
-    super::deposit::deposit_to_vault(offramper, amount)?;
+    super::deposit::deposit_to_vault(offramper, amount, runes)?;
 
     Ok(())
 }
