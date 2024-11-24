@@ -112,7 +112,7 @@ dfx deploy backend_fusion --argument "(
 )" --ic
 
 dfx canister call bitcoin_fusion register_runes '(vec {
-    record { symbol = "🐕"; fivisibility = 5 : nat8; cap = 100_000_000_000 : nat; premine = 100_000_000_000 : nat };
+    record { symbol = "🐕"; divisibility = 5 : nat8; cap = 100_000_000_000 : nat; premine = 100_000_000_000 : nat };
     record { symbol = "🤖"; divisibility = 5 : nat8; cap = 1_000_000_000 : nat; premine = 1_000_000_000 : nat };
     record { symbol = "🐸"; divisibility = 5 : nat8; cap = 20_814_270_000 : nat; premine = 20_790_000_000 : nat };
     record { symbol = "🧙"; divisibility = 0 : nat8; cap = 10_000 : nat; premine = 10_000 : nat };

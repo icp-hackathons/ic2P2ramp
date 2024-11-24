@@ -36,23 +36,25 @@
       "type": "assets",
       "source": ["dist/"]
     },
-    "bitcoin_devcon": {
+
+    "bitcoin_fusion": {
       "dependencies": [],
       "candid": "bitcoin_backend/bitcoin_backend.did",
       "package": "bitcoin_backend",
       "type": "rust"
     },
-    "backend_devcon": {
-      "dependencies": ["evm_rpc", "xrc", "bitcoin_devcon"],
+    "backend_fusion": {
+      "dependencies": ["evm_rpc", "xrc", "bitcoin_fusion"],
       "candid": "backend/backend.did",
       "package": "backend",
       "type": "rust"
     },
-    "frontend_devcon": {
-      "dependencies": ["backend_devcon"],
+    "frontend_fusion": {
+      "dependencies": ["backend_fusion"],
       "type": "assets",
       "source": ["dist/"]
     },
+
     "internet_identity": {
       "type": "custom",
       "candid": "https://github.com/dfinity/internet-identity/releases/download/release-2024-07-12/internet_identity.did",
@@ -104,7 +106,11 @@
   },
   "networks": {
     "local": {
-      "bind": "127.0.0.1:4943"
+      "bind": "127.0.0.1:8080",
+      "type": "ephemeral",
+      "replica": {
+        "subnet_type": "system"
+      }
     }
   },
   "output_env_file": ".env",
