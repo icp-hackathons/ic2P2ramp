@@ -4,7 +4,7 @@ use ic_cdk::api::management_canister::bitcoin::{
     GetUtxosRequest, MillisatoshiPerByte, SendTransactionRequest, Utxo, UtxoFilter,
 };
 
-use crate::types::errors::{BitcoinError, Result};
+use crate::model::types::errors::{BitcoinError, Result};
 
 /// Returns the balance of the given bitcoin address.
 ///
