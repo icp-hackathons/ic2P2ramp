@@ -1,6 +1,14 @@
-use std::cell::{Cell, RefCell};
+use std::{
+    cell::{Cell, RefCell},
+    collections::HashMap,
+};
 
 use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
+
+use crate::model::types::{
+    errors::{BitcoinError, Result},
+    runes::RuneMetadata,
+};
 
 thread_local! {
     // The bitcoin network to connect to.
@@ -15,4 +23,34 @@ thread_local! {
 
     // The ECDSA key name.
     pub static KEY_NAME: RefCell<String> = RefCell::new(String::from(""));
+
+    // Registered Runes
+    pub static RUNES: RefCell<HashMap<String, RuneMetadata>> = RefCell::new(HashMap::new());
+}
+
+pub async fn register_runes(rune_list: Vec<RuneMetadata>) -> Result<()> {
+    RUNES.with_borrow_mut(|runes| {
+        for rune in rune_list {
+            runes.insert(rune.symbol.clone(), rune);
+        }
+    });
+
+    Ok(())
+}
+
+pub fn is_rune_supported(symbol: &str) -> Result<()> {
+    RUNES.with_borrow(|runes| {
+        if !runes.contains_key(symbol) {
+            Err(BitcoinError::UnsupportedRune(symbol.to_string()))
+        } else {
+            Ok(())
+        }
+    })
+}
+
+pub fn get_rune_metadata(symbol: &str) -> Result<RuneMetadata> {
+    let runes = RUNES.with(|runes| runes.borrow().clone());
+    runes.get(symbol).cloned().ok_or_else(|| {
+        BitcoinError::InvalidInput(format!("Rune symbol {} is not supported", symbol))
+    })
 }

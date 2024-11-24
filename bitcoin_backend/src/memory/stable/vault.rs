@@ -5,7 +5,9 @@ use ic_stable_structures::{
     DefaultMemoryImpl, StableBTreeMap,
 };
 
-use crate::types::Address;
+use crate::model::types::Address;
+
+pub type RuneKey = (Address, String);
 
 pub type Memory = VirtualMemory<DefaultMemoryImpl>;
 
@@ -21,7 +23,13 @@ thread_local! {
 
     pub static ONRAMPER_VAULTS: RefCell<StableBTreeMap<Address, u64, Memory>> = RefCell::new(
         StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0))),
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))),
+        )
+    );
+
+    pub static RUNES_VAULTS: RefCell<StableBTreeMap<RuneKey, u64, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2))),
         )
     );
 }
