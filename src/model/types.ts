@@ -5,14 +5,16 @@ import {
   PaymentProviderType,
   UserType,
 } from '../declarations/backend/backend.did';
+import { RuneMetadata } from '../declarations/bitcoin_fusion/bitcoin_fusion.did';
 
 export interface TokenOption {
   name: string;
-  address: string;
+  address: string; // For runes, this can hold the serialized metadata.
   decimals: number;
   isNative: boolean;
   rateSymbol: string;
   logo: string;
+  runeMetadata?: RuneMetadata; // Optional, only present for Runes.
 }
 
 type ExtractKeys<T> = T extends { [key: string]: any } ? keyof T : never;
