@@ -3,7 +3,7 @@ use crate::Result;
 use candid::Principal;
 use ic_cdk::api::call::call;
 
-const BITCOIN_BACKEND_CANISTER_ID: &str = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+const BITCOIN_BACKEND_CANISTER_ID: &str = "be2us-64aaa-aaaaa-qaabq-cai";
 
 /// Calls the `lock_funds` function on the `bitcoin_backend` canister.
 pub async fn bitcoin_backend_lock_funds(
@@ -64,6 +64,20 @@ pub async fn bitcoin_backend_send_funds(onramper_address: String, amount: u64) -
         bitcoin_backend_canister_id,
         "complete_order_and_send",
         (onramper_address, amount),
+    )
+    .await
+    .map_err(|(code, err)| SystemError::ICRejectionError(code, err).into())
+}
+
+/// Calls the `validate_rune_metadata` function on the `bitcoin_backend` canister.
+pub async fn bitcoin_backend_validate_rune(rune_data: String) -> Result<()> {
+    let bitcoin_backend_canister_id = Principal::from_text(BITCOIN_BACKEND_CANISTER_ID)
+        .map_err(|_| SystemError::InvalidInput("Invalid ledger principal".to_string()))?;
+
+    call::<(String,), ()>(
+        bitcoin_backend_canister_id,
+        "validate_rune_metadata",
+        (rune_data,),
     )
     .await
     .map_err(|(code, err)| SystemError::ICRejectionError(code, err).into())

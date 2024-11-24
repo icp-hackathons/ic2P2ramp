@@ -13,7 +13,7 @@ use crate::evm::{
     vault::Ic2P2ramp,
 };
 use crate::icp::vault::Ic2P2ramp as ICPRamp;
-use crate::inter_canister::bitcoin;
+use crate::inter_canister::bitcoin::{self, bitcoin_backend_validate_rune};
 use crate::management::user as user_management;
 use crate::model::guards;
 use crate::model::{
@@ -216,7 +216,12 @@ pub async fn validate_deposit_tx(
             is_icp_token_supported(ledger_principal)?;
             Ok(None)
         }
-        Blockchain::Bitcoin => Ok(None),
+        Blockchain::Bitcoin => {
+            if let Some(rune_token) = order_token {
+                bitcoin_backend_validate_rune(rune_token).await?;
+            }
+            Ok(None)
+        }
         _ => Err(BlockchainError::UnsupportedBlockchain)?,
     }
 }
