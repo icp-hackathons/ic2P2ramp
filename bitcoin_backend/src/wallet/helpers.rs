@@ -6,7 +6,7 @@ use ic_cdk::api::management_canister::bitcoin::{BitcoinNetwork, Utxo};
 
 use crate::{
     api,
-    types::errors::{BitcoinError, InsufficientBalanceError, Result},
+    model::types::errors::{BitcoinError, InsufficientBalanceError, Result},
 };
 
 pub fn transform_network(network: BitcoinNetwork) -> Network {

@@ -13,7 +13,7 @@ use std::str::FromStr;
 
 use crate::{
     api,
-    types::errors::{BitcoinError, Result},
+    model::types::errors::{BitcoinError, Result},
 };
 
 use super::helpers::transform_network;
@@ -25,21 +25,18 @@ pub async fn get_address(
     network: BitcoinNetwork,
     key_name: String,
     derivation_path: Vec<Vec<u8>>,
-) -> String {
-    // Fetch the public key of the given derivation path.
+) -> Result<String> {
     let public_key = api::ecdsa::get_ecdsa_public_key(key_name, derivation_path).await;
-
-    // Compute the address.
     public_key_to_p2pkh_address(network, &public_key)
 }
 
 // Converts a public key to a P2PKH address.
-fn public_key_to_p2pkh_address(network: BitcoinNetwork, public_key: &[u8]) -> String {
-    Address::p2pkh(
-        &PublicKey::from_slice(public_key).expect("failed to parse public key"),
+fn public_key_to_p2pkh_address(network: BitcoinNetwork, public_key: &[u8]) -> Result<String> {
+    Ok(Address::p2pkh(
+        &PublicKey::from_slice(public_key).map_err(BitcoinError::from)?,
         transform_network(network),
     )
-    .to_string()
+    .to_string())
 }
 
 /// Sends a transaction to the network that transfers the given amount to the
@@ -57,7 +54,7 @@ pub async fn send(
     // Fetch our public key, P2PKH address, and UTXOs.
     let own_public_key =
         api::ecdsa::get_ecdsa_public_key(key_name.clone(), derivation_path.clone()).await;
-    let own_address = public_key_to_p2pkh_address(network, &own_public_key);
+    let own_address = public_key_to_p2pkh_address(network, &own_public_key)?;
 
     ic_cdk::println!("Fetching UTXOs...");
     // Get utxos up to necessary amount HERE?
