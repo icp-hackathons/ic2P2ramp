@@ -24,10 +24,20 @@ import { UserTypes } from '../../model/types';
 import { icpHost, iiUrl } from '../../model/icp';
 import { formatCryptoUnits } from '../../model/helper';
 import { getChains } from '../../wagmi';
+import { supportedRuneSymbols } from '../../constants/runes';
+import bitcoinLogo from '../../assets/blockchains/bitcoin-logo.svg';
 
 export interface Balance {
     raw: bigint;
     formatted: string;
+    logo: string;
+}
+
+export interface BitcoinBalance {
+    raw: bigint;
+    formatted: string;
+    logo: string;
+    runes: { [runeId: string]: { raw: bigint; formatted: string; symbol: string, logo: string, name: string } };
 }
 
 console.log("Frontend Canister:", process.env.FRONTEND_CANISTER_ID);
@@ -54,13 +64,12 @@ interface UserContextProps {
     ) => Promise<Result_1>;
     logout: () => Promise<void>;
 
-
     icpAgent: HttpAgent | null;
     backendActor: ActorSubclass<_SERVICE> | null,
     principal: Principal | null;
     icpBalances: { [tokenName: string]: Balance } | null;
     evmBalances: { [tokenAddress: string]: Balance } | null;
-    bitcoinBalance: Balance | null;
+    bitcoinBalance: BitcoinBalance | null;
     fetchBalances: () => Promise<void>;
 }
 
@@ -82,7 +91,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const { address, chainId, isConnected } = useAccount();
     const [icpBalances, setIcpBalances] = useState<{ [tokenName: string]: Balance } | null>(null);
     const [evmBalances, setEvmBalances] = useState<{ [tokenAddress: string]: Balance } | null>(null);
-    const [bitcoinBalance, setBitcoinBalance] = useState<Balance | null>(null);
+    const [bitcoinBalance, setBitcoinBalance] = useState<BitcoinBalance | null>(null);
 
     const userType = getUserType(user);
 
@@ -187,8 +196,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                             }
                             setIcpAgent(agent);
 
-                            if (!process.env.CANISTER_ID_BACKEND) throw new Error("Backend Canister ID not in env file");
-                            const actor = createActor(process.env.CANISTER_ID_BACKEND, { agent });
+                            if (!process.env.CANISTER_ID_BACKEND_FUSION) throw new Error("Backend Canister ID not in env file");
+                            const actor = createActor(process.env.CANISTER_ID_BACKEND_FUSION, { agent });
                             setBackendActor(actor)
 
                             resolve([principal, agent]);
@@ -311,7 +320,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                 const balanceResult = await ledger.balance(balanceParams);
 
                 const balanceFloat = Number(balanceResult) / 10 ** token.decimals;
-                balances[token.name] = { raw: balanceResult, formatted: formatCryptoUnits(balanceFloat) }
+                balances[token.name] = { raw: balanceResult, formatted: formatCryptoUnits(balanceFloat), logo: token.logo }
             }
 
             setIcpBalances(balances);
@@ -326,13 +335,39 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             let res = await (window as any).unisat.getBalance();
+            const bitcoinBalances: BitcoinBalance = {
+                raw: BigInt(res.total),
+                formatted: formatCryptoUnits(res.total / 10 ** 8),
+                logo: bitcoinLogo,
+                runes: {}
+            };
+
             console.log("[fetchBitcoinBalance] unisatGetBalance res = ", res);
-            setBitcoinBalance({ raw: res.total, formatted: formatCryptoUnits(res.total / 10 ** 8) });
+
+            for (const rune of supportedRuneSymbols) {
+                try {
+                    const runeBalanceRes = await fetch(
+                        `https://open-api.unisat.io/v1/indexer/address/${bitcoinAddress}/runes/${rune.runeid}/balance`
+                    );
+                    const runeBalanceData = await runeBalanceRes.json();
+
+                    bitcoinBalances.runes[rune.runeid] = {
+                        raw: BigInt(runeBalanceData.balance),
+                        formatted: formatCryptoUnits(runeBalanceData.balance / 10 ** runeBalanceData.divisibility),
+                        symbol: rune.symbol,
+                        logo: rune.logo,
+                        name: rune.name
+                    };
+                } catch (err) {
+                    console.error(`Failed to fetch balance for Rune ${rune.runeid}`, err);
+                }
+            }
+
+            setBitcoinBalance(bitcoinBalances);
         } catch (e) {
             console.log('Failed to fetch Bitcoin balance: ', e);
             setBitcoinBalance(null);
         }
-
     }
 
     const fetchEvmBalances = async () => {
@@ -349,7 +384,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             for (const token of getEvmTokens(chainId)) {
                 if (token.isNative) {
                     const nativeBalance = await provider.getBalance(address);
-                    balances[token.name] = { raw: nativeBalance, formatted: formatCryptoUnits(Number(ethers.formatEther(nativeBalance))) };
+                    balances[token.name] = { raw: nativeBalance, formatted: formatCryptoUnits(Number(ethers.formatEther(nativeBalance))), logo: token.logo };
                 } else {
                     const tokenContract = new ethers.Contract(
                         token.address,
@@ -357,7 +392,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                         signer,
                     );
                     const balance = await tokenContract.balanceOf(signer.address);
-                    balances[token.address] = { raw: balance, formatted: formatCryptoUnits(Number(ethers.formatUnits(balance, token.decimals))) };
+                    balances[token.address] = { raw: balance, formatted: formatCryptoUnits(Number(ethers.formatUnits(balance, token.decimals))), logo: token.logo };
                 }
             }
 
