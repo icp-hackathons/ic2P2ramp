@@ -17,7 +17,8 @@
     "frontend": {
       "dependencies": ["backend"],
       "type": "assets",
-      "source": ["dist/"]
+      "source": ["frontend/dist/"],
+      "workspace": "frontend"
     },
     "bitcoin_backend": {
       "dependencies": [],

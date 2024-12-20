@@ -5,7 +5,7 @@ import {
   PaymentProviderType,
   UserType,
 } from '../declarations/backend/backend.did';
-import { RuneMetadata } from '../declarations/bitcoin_fusion/bitcoin_fusion.did';
+import { RuneMetadata } from '../declarations/bitcoin_backend/bitcoin_backend.did';
 
 export interface TokenOption {
   name: string;
