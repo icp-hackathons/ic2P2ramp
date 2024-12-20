@@ -1,5 +1,9 @@
 #!/bin/bash
 
+./generate_env.sh local
+
+dfx start --background --clean
+
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
 
 shellcheck source=../.env
@@ -180,36 +184,36 @@ dfx canister call backend register_evm_tokens '(421614 : nat64, vec {
 
 # export ACCOUNT_ID=$(dfx ledger account-id --of-principal x43o3-z4337-mle53-vdvne-poc44-i7e66-rr34k-3sdep-uebye-i4r3t-7qe)
 
-# export TO_PRINCIPAL="hhiav-hyozb-vrf5y-wligd-qai2n-xgwbb-haol3-4xqp3-rh73l-hhtep-qae"
-# export TO_SUBACCOUNT="null"
-# export AMOUNT="2_500_000_000"
-# export FEE="10_000"
+export TO_PRINCIPAL="dvbrj-gc3mc-56aem-lxs4s-yq2sj-5xryx-zgkrd-zk3xu-glhtj-wpotk-tae"
+export TO_SUBACCOUNT="null"
+export AMOUNT="2_500_000_000"
+export FEE="10_000"
 
-# dfx canister call ryjl3-tyaaa-aaaaa-aaaba-cai icrc1_transfer \
-# '(record {
-#     to = record {
-#         owner = principal "'$TO_PRINCIPAL'";
-#         subaccount = '$TO_SUBACCOUNT';
-#     };
-#     fee = opt '$FEE';
-#     memo = null;
-#     from_subaccount = null;
-#     created_at_time = null;
-#     amount = '$AMOUNT';
-# })'
+dfx canister call ryjl3-tyaaa-aaaaa-aaaba-cai icrc1_transfer \
+'(record {
+    to = record {
+        owner = principal "'$TO_PRINCIPAL'";
+        subaccount = '$TO_SUBACCOUNT';
+    };
+    fee = opt '$FEE';
+    memo = null;
+    from_subaccount = null;
+    created_at_time = null;
+    amount = '$AMOUNT';
+})'
 
-# export AMOUNT="500_000_000"
-# export FEE="10"
+export AMOUNT="500_000_000"
+export FEE="10"
 
-# dfx canister call mc6ru-gyaaa-aaaar-qaaaq-cai icrc1_transfer \
-# '(record {
-#     to = record {
-#         owner = principal "'$TO_PRINCIPAL'";
-#         subaccount = '$TO_SUBACCOUNT';
-#     };
-#     fee = opt '$FEE';
-#     memo = null;
-#     from_subaccount = null;
-#     created_at_time = null;
-#     amount = '$AMOUNT';
-# })'
+dfx canister call mc6ru-gyaaa-aaaar-qaaaq-cai icrc1_transfer \
+'(record {
+    to = record {
+        owner = principal "'$TO_PRINCIPAL'";
+        subaccount = '$TO_SUBACCOUNT';
+    };
+    fee = opt '$FEE';
+    memo = null;
+    from_subaccount = null;
+    created_at_time = null;
+    amount = '$AMOUNT';
+})'

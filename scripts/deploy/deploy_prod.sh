@@ -1,5 +1,9 @@
 #!/bin/bash
 
+./generate_env.sh production
+
+dfx start --background --clean
+
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
 
 shellcheck source=../.env.production

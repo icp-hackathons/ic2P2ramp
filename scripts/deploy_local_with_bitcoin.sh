@@ -1,5 +1,11 @@
 #!/bin/bash
 
+./init_bitcoind.sh
+
+./generate_env.sh local
+
+dfx start --background --clean
+
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
 
 shellcheck source=../.env
@@ -8,29 +14,25 @@ source "$DIR/../.env" || {
   exit
 }
 
-# Might be necessary
-# dfx ledger fabricate-cycles --icp 10000 --canister $(dfx identity get-wallet --ic)
-# dfx cycles top-up --ic $(dfx identity get-wallet --ic) 1_000_000_000_000
-
 # Bitcoin Deployment
 cargo build --release --target wasm32-unknown-unknown --package bitcoin_backend
 
 candid-extractor target/wasm32-unknown-unknown/release/bitcoin_backend.wasm > bitcoin_backend/bitcoin_backend.did
 
-dfx canister create --with-cycles 1_000_000_000_000 bitcoin_fusion --ic
+dfx canister create --with-cycles 1_000_000_000_000 bitcoin_backend
 
-dfx deploy bitcoin_fusion --argument '(variant { testnet })' --ic
+dfx deploy bitcoin_backend --specified-id zhuzm-wqaaa-aaaap-qpk2q-cai --argument '(variant { regtest })'
 
 # Backend Deployment
 cargo build --release --target wasm32-unknown-unknown --package backend
 
-dfx canister create --with-cycles 1_000_000_000_000 backend_fusion --ic
+dfx canister create --with-cycles 1_000_000_000_000 backend
 
-dfx deploy backend_fusion --argument "(
+dfx deploy backend --argument "(
   variant { 
     Reinstall = record {
       ecdsa_key_id = record {
-        name = \"test_key_1\";
+        name = \"dfx_test_key\";
         curve = variant { secp256k1 };
       };
       chains = vec {
@@ -109,9 +111,9 @@ dfx deploy backend_fusion --argument "(
       proxy_url = \"https://ic2p2ramp.xyz\";
     }
   }
-)" --ic
+)"
 
-dfx canister call bitcoin_fusion register_runes '(vec {
+dfx canister call bitcoin_backend register_runes '(vec {
     record { symbol = "🐕"; divisibility = 5 : nat8; cap = 100_000_000_000 : nat; premine = 100_000_000_000 : nat };
     record { symbol = "🤖"; divisibility = 5 : nat8; cap = 1_000_000_000 : nat; premine = 1_000_000_000 : nat };
     record { symbol = "🐸"; divisibility = 5 : nat8; cap = 20_814_270_000 : nat; premine = 20_790_000_000 : nat };
