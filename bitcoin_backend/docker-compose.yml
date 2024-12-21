@@ -36,7 +36,7 @@ services:
       - ORD_BITCOIN_RPC_USERNAME=icp
       - ORD_BITCOIN_RPC_PASSWORD=test
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       - bitcoind
     networks:
