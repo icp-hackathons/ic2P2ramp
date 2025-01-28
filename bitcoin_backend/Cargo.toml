@@ -1,0 +1,16 @@
+[package]
+name = "bitcoin_backend"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+bitcoin = "0.32.4"
+candid = "0.10.10"
+hex = "0.4.3"
+ic-cdk = "0.16.0"
+ic-stable-structures = "0.6.5"
+serde = "1.0.214"
+thiserror = "1.0.65"

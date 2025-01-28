@@ -1,0 +1,19 @@
+mode: separate-outputs
+etching:
+  rune: ZZZ•DOG•TO•THE•MOON
+  divisibility: 0
+  premine: 1000
+  supply: 10000
+  symbol: 🐕
+  terms:
+    cap: 90
+    amount: 100
+    height:
+      start: 99
+      end: 999999
+  turbo: false
+inscriptions:
+  - file: ./dog-rune-logo.png
+    metadata:
+      title: "DOG Rune"
+      description: "The best meme coin on Bitcoin."

@@ -1,8 +1,14 @@
 {
   "backend": {
-    "ic": "gtp43-xiaaa-aaaap-qhlvq-cai"
+    "ic": "5rqet-6aaaa-aaaap-qklma-cai"
+  },
+  "backend_prod": {
+    "ic": "ygiqq-kqaaa-aaaap-qkh6a-cai"
   },
   "frontend": {
-    "ic": "gginw-waaaa-aaaap-qhlwa-cai"
+    "ic": "5wrch-tyaaa-aaaap-qklmq-cai"
+  },
+  "frontend_prod": {
+    "ic": "paaji-gyaaa-aaaap-qkedq-cai"
   }
 }
